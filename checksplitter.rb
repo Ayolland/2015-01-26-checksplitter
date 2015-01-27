@@ -1,90 +1,82 @@
 require 'pry'
 
-class Checksplitter
-  def initialize(param_total,dinner_club_name)
-    @total = param_total.round(2)
-    @guests = 0
-    @members = []
-    @grat = 0.2
-    @club = dinner_club_name
-    @settled = :no
-    #puts "You will be splitting $" + @total.to_s + " evenly between " + @guests.to_s + " people."
+class Check
+  
+  attr_reader :total_after_tax, :members_attending, :members_share, :settled, :number_of_guests
+  attr_accessor :gratuity
+  
+  def initialize(total_after_tax_temp)
+    @total_after_tax = total_after_tax_temp
+    @members_attending = {} #this should be pushed from the DiningClub object
+    @members_share = {} #this will be show what percentage of the bill/tip each member should cover
+    @settled = :no #This marks the check as currently active and able to be modified.
+    @number_of_guests = 0 #this will be added to as the DiningClub object adds members
+    @gratuity = 0.2 #Gratuity is set to a default of twenty percent.
   end
   
-  attr_reader :total, :guests, :grat, :members, :club, :split, :tipeach, :tiptotal, :settled
-  
-  def addguest(member_name)
-    if settled == :no
-      @members.push(member_name)
-      @guests += 1
-    end
+  ##FINISH THIS DOC LATER
+  #This method will take a 0-100 value and covert it to a percentage, with a minimum of .1
+  def set_gratuity
   end
   
-  def eachsub
-    (@total / @guests).round(2)
+  #FINISH THIS DOC LATER
+  #This method will set one member's share to 100% and all others to 0%
+  def check_is_on(very_nice_person)
   end
   
-  def tiptotal
-    @total * @grat
+  ##FINISH THIS DOC LATER
+  #This method will set one member's share to be the balance not paid by other members.
+  def balance_is_on(probably_the_boss)
+  end
+    
+  #FINISH THIS DOC LATER
+  #This method should use @members_share to determine how much each member should pay
+  def split_check
   end
   
-  def tipeach
-    (tiptotal / guests).round(2)
-  end
-  
-  def set_grat(t)
-    if settled == :no
-      @grat = t * 0.01
-    end
-  end
-  
-  def split
-    eachsub + tipeach
-  end
-  
-  def settle
-    @members.each do |member_name|
-      @club.roster[member_name] += split
-    end
-    @settled = :yes
-  end
 end
 
+# Class: DinnerClub
+#
+# Attributes:
+# @roster - Hash: ??
+# @log    - Hash: Keys are the date of the event, Values are
+#                 Check object for that event.
 class DinnerClub
   
   def initialize
-  @roster = {}
-  @log ={}
+    @roster = {}
+    @log ={}
+  end
+
+  # FINISH THIS DOC LATER
+  #This method push a new member into @roster. They start with a value of 0.
+  def add_member_to_club()
+    
   end
   
-  attr_reader :roster, :log
-  
-  def add_member(member_name)
-    @roster[member_name] = 0.0
+  #FINISH THIS DOC LATER
+  # This method should push a member's name and the amount they spent pre-tax to the Check object.
+  def add_member_to_curent_check
   end
   
-  def settle_and_log(checksplitter_name,date)
-    checksplitter_name.settle
-    @log[date] = checksplitter_name
+  #FINISH THIS DOC LATER
+  # This method should use the Check object to determine how much each member should pay, add that to their balance in the Diner object, and mark that Check as settled.
+  def settle_current_check
+  end
+end
+
+#this class should have a name, a balance, and a log.
+class Diner
+  
+  def initialize(new_member_name)
+    @member_name = new_member_name #Their name.
+    @dinner_log = {} #A hash where date is the key, and Check objects are values.
+    @member_balance = 0 #To be added to with each event they attend.
   end
   
 end
 
-
-coolkids = DinnerClub.new
-coolkids.add_member('Diane')
-coolkids.add_member('Ross')
-coolkids.add_member('Fozzy')
-puts coolkids.roster
-thai = Checksplitter.new(200,coolkids)
-thai.addguest('Diane')
-thai.addguest('Ross')
-puts thai.members
-thai.set_grat(26)
-coolkids.settle_and_log(thai,'1-30-2015')
-puts coolkids.roster
-thai.settle
-coolkids.roster
 
 binding.pry
     
