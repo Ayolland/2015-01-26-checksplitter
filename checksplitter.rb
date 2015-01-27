@@ -14,9 +14,9 @@ class Checksplitter
   attr_reader :total, :guests, :grat, :members, :club, :split, :tipeach, :tiptotal, :settled
   
   def addguest(member_name)
-    while settle == :no
-    @members.push(member_name)
-    @guests += 1
+    if settled == :no
+      @members.push(member_name)
+      @guests += 1
     end
   end
   
@@ -33,8 +33,8 @@ class Checksplitter
   end
   
   def set_grat(t)
-    while settle == :no
-    @grat = t * 0.01
+    if settled == :no
+      @grat = t * 0.01
     end
   end
   
@@ -57,7 +57,7 @@ class DinnerClub
   @log ={}
   end
   
-  attr_reader :roster
+  attr_reader :roster, :log
   
   def add_member(member_name)
     @roster[member_name] = 0.0
@@ -83,7 +83,8 @@ puts thai.members
 thai.set_grat(26)
 coolkids.settle_and_log(thai,'1-30-2015')
 puts coolkids.roster
-coolkids.log
+thai.settle
+coolkids.roster
 
 binding.pry
     
