@@ -2,8 +2,8 @@ require 'pry'
 
 class Check
   
-  attr_reader :total_after_tax, :members_attending, :members_share, :settled, :number_of_guests
-  attr_accessor :gratuity
+  attr_reader :total_after_tax, :members_attending, :members_share, :number_of_guests
+  attr_accessor :gratuity, :settled
   
   def initialize(total_after_tax_temp)
     @total_after_tax = total_after_tax_temp
@@ -39,11 +39,12 @@ end
 # Class: DinnerClub
 #
 # Attributes:
-# @roster - Hash: Keys are Diner's names. Values is the total
-#                 money they have paid over all events.
+# @roster - Hash: Keys are member's names. Values are Diner objects.
 # @log    - Hash: Keys are the date of the event, Values are
 #                 Check object for that event.
 class DinnerClub
+  
+   attr_reader :roster, :log
   
   def initialize
     @roster = {}
@@ -52,7 +53,7 @@ class DinnerClub
   end
 
   # FINISH THIS DOC LATER
-  #This method push a new member into @roster. They start with a value of 0.
+  #This method creates a new Diner object and adds it into @roster.
   def add_member_to_club(name_of_new_diner)
     @roster[name_of_new_diner] = Diner.new(name_of_new_diner)
   end
@@ -60,7 +61,7 @@ class DinnerClub
   #FINISH THIS DOC LATER
   # This method should push a member's name and the amount they spent pre-tax to the Check object.
   def add_member_to_check(name_of_check,member_name,individual_amount_pretax)
-    if name_of_current_check.settled == :no
+    if name_of_check.settled == :no
     name_of_check.members_attending[member_name] = individual_amount_pretax
     end
   end
@@ -74,7 +75,7 @@ class DinnerClub
   #FINISH THIS DOC LATER
   # This method should add a settled check to the log.
   def add_check_to_log(check_object,date)
-    if (check_object.settled == :yes) + (@log[date] == nil)
+    if (check_object.settled == :yes) && (@log[date] == nil)
       @log[date] = check_object
     end
   end
@@ -82,6 +83,8 @@ end
 
 #this class should have a name, a balance, and a log.
 class Diner
+  
+  attr_reader :name, :dinner_log, :member_balance
   
   def initialize(real_name)
     @name = real_name #
@@ -91,6 +94,11 @@ class Diner
   
 end
 
-
+superpals = DinnerClub.new
+superpals.add_member_to_club('Batman')
+pizza = Check.new(350.55)
+superpals.add_member_to_check(pizza,'Batman',5.50)
+superpals.settle_check(pizza)
+superpals.add_check_to_log(pizza,'now')
 binding.pry
     
