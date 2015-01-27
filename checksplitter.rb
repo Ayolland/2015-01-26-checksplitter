@@ -51,26 +51,38 @@ class DinnerClub
 
   # FINISH THIS DOC LATER
   #This method push a new member into @roster. They start with a value of 0.
-  def add_member_to_club()
-    
+  def add_member_to_club(name_of_new_diner)
+    @roster[name_of_new_diner] = Diner.new(name_of_new_diner)
   end
   
   #FINISH THIS DOC LATER
   # This method should push a member's name and the amount they spent pre-tax to the Check object.
-  def add_member_to_curent_check
+  def add_member_to_check(name_of_check,member_name,individual_amount_pretax)
+    if name_of_current_check.settled == :no
+    name_of_check.members_attending[member_name] = individual_amount_pretax
+    end
   end
   
   #FINISH THIS DOC LATER
   # This method should use the Check object to determine how much each member should pay, add that to their balance in the Diner object, and mark that Check as settled.
-  def settle_current_check
+  def settle_check(check_object)
+    check_object.settled = :yes #that's all for now
+  end
+  
+  #FINISH THIS DOC LATER
+  # This method should add a settled check to the log.
+  def add_check_to_log(check_object,date)
+    if (check_object.settled == :yes) + (@log[date] == nil)
+      @log[date] = check_object
+    end
   end
 end
 
 #this class should have a name, a balance, and a log.
 class Diner
   
-  def initialize(new_member_name)
-    @member_name = new_member_name #Their name.
+  def initialize(real_name)
+    @name = real_name #
     @dinner_log = {} #A hash where date is the key, and Check objects are values.
     @member_balance = 0 #To be added to with each event they attend.
   end
