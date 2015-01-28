@@ -102,7 +102,7 @@ class Check
     return (1.0 / @number_of_guests).round(2)
   end
   
-# Public: #split_individually
+# Public: #all_on()
 # Sets one member's shares to 100% and all others to 0%
 #
 # Returns: 
