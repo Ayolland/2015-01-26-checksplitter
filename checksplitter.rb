@@ -6,7 +6,7 @@ require 'pry'
 #
 # Attributes:
 # @total_after_tax   - The total value of the check when presented.
-# @members_tabs - A hash filled by the DiningClub class, keys are member names, 
+# @members_tabs      - A hash filled by the DiningClub class, keys are member names, 
 #                      values are the amount each member ordered for this check.
 # @members_share     - A hash, keys are names, values are the percentage of the 
 #                      total bill the member will end up paying.
@@ -30,14 +30,15 @@ class Check
   attr_reader :total_after_tax, :members_tabs, :members_share, :gratuity, :settled
   attr_accessor :number_of_guests
   
-  def initialize(total_after_tax_temp)
+  def initialize(total_after_tax_temp, grat=20)
     @total_after_tax = total_after_tax_temp
     @members_tabs = {} 
     @members_share = {}
     @split = :no 
     @settled = :no 
     @number_of_guests = 0 
-    @gratuity = 0.2 
+    @gratuity = grat * 0.01 
+    @gratuity = 0.1 if @gratuity < 0.1
   end
   
 # Public: #set_gratuity
@@ -203,6 +204,7 @@ end
 #
 # Public Methods:
 # #add_check_to_log
+# #member_total
 
 
 class DinnerClub
@@ -239,16 +241,25 @@ class DinnerClub
     return @log[description]
   end
   
+# Public: #member_total
+# returns the total that member has spent as of yet.
+#
+# Returns: 
+# the value in the @log hash corresponding for the name.
+  
+  def member_total(member_name)
+    @roster[member_name]
+  end
+  
 end
 
 superpals = DinnerClub.new
-pizza = Check.new(36.50)
+pizza = Check.new(36.50, 26)
 pizza.add_diners('Batman','Barbara','Dick')
 pizza.diners_tab('Batman',12.12)
 pizza.diners_tab('Barbara',10.0)
 pizza.diners_tab('Dick',8.92)
 pizza.split_individually
-pizza.set_gratuity(26)
 pizza.settle
 superpals.add_check_to_log(pizza,'01-30 Went to fancy pizza with kids.')
 ice_cream = Check.new(22.07)
@@ -256,7 +267,7 @@ ice_cream.add_diners('Dick', 'Clark', 'Barbara', 'Batman')
 ice_cream.split_evenly
 ice_cream.settle
 superpals.add_check_to_log(ice_cream,'01-30 Got ice cream with Clark after.')
-scotch = Check.new (150.00)
+scotch = Check.new(150.00, 18)
 scotch.add_diners('Diana', 'Clark')
 scotch.diners_tab('Clark', 50.0)
 scotch.diners_tab('Diana', 50.0)
@@ -264,7 +275,7 @@ scotch.diners_tab('Batman', 50.0)
 scotch.all_on('Batman')
 scotch.set_gratuity(-30)
 scotch.settle
-superpals.add_check_to_log(scotch,'Bought a round for the gang.')
+superpals.add_check_to_log(scotch,'Ran into the gang, bought a round')
 puts superpals.log
 binding.pry
     
