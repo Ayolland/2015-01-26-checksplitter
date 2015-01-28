@@ -21,36 +21,45 @@ class Check
     gratuity = 0.01 if gratuity < 0.01
   end
   
-  #FINISH THIS DOC LATER
   #
+  #This method determines the total including tip.
+  def calc_total
+    (@total_after_tax * @gratuity) + @total_after_tax
+  end
+  
+  #FINISH THIS DOC LATER
+  # This method will assign shares based on how much each member ordered.
   def split_individually
     total_pre_tax = 0.0
     @members_attending.each do |member_name, each_pre_tax|
      total_pre_tax += each_pre_tax
     end
     @members_attending.each do |member_name, each_pre_tax|
-    @members_share[member_name] = (each_pre_tax / total_pre_tax).round(2)
-    #puts @members_share[member_name]
+      @members_share[member_name] = (each_pre_tax / total_pre_tax).round(2)
     end
-    #return total_pre_tax
+    return @members_share
   end
   
   ##FINISH THIS DOC LATER
-  #THis method will split the bill evenly, regardless of what each person ordered.
+  #THis method will assign shares evenly, regardless of what each person ordered.
   def split_evenly
     @members_attending.each do|member_name, each_pre_tax|
-      
+      @members_share[member_name] = (1.0 / @number_of_guests).round(2)
     end
+    return (1.0 / @number_of_guests).round(2)
   end
   
   #FINISH THIS DOC LATER
-  #This method will set one member's share to 100% and all others to 0%
+  #This method will set one member's shares to 100% and all others to 0%
   def all_on(very_nice_person)
-  end
-    
-  #FINISH THIS DOC LATER
-  #This method should use @members_share to determine how much each member should pay
-  def split_check
+    @members_attending.each do |member_name, each_pre_tax|
+      if member_name == very_nice_person
+        @members_share[member_name] = 1
+      else
+        @members_share[member_name] = 0
+      end
+    end
+    return very_nice_person
   end
   
 end
