@@ -24,8 +24,8 @@ require 'pry'
 
 class Check
   
-  attr_reader :total_after_tax, :members_attending, :members_share
-  attr_accessor :gratuity, :settled, :number_of_guests
+  attr_reader :total_after_tax, :members_attending, :members_share, :gratuity, :settled
+  attr_accessor :number_of_guests
   
   def initialize(total_after_tax_temp)
     @total_after_tax = total_after_tax_temp
@@ -56,7 +56,7 @@ class Check
     return @gratuity
   end
   
-# Public: #calc_total
+# Private: #calc_total
 # Calculates the total bill including gratuity.
 #
 # Returns: 
@@ -123,7 +123,7 @@ class Check
   end
   
 # Public: #settle
-# Uses @members_share and @calc_total to create a hash of each member's payment.
+# Uses @members_share and #calc_total to create a hash of each member's payment.
 #
 # Returns: 
 # a hash where keys are member names and values are amounts paid.
@@ -134,7 +134,7 @@ class Check
   def settle
     settlement = {}
     @members_share.each do |name, share|
-      settlement[name] = (calc_total * share)
+      settlement[name] = (calc_total * share).round(2)
     end
     @settled = :yes
     return settlement
@@ -147,7 +147,7 @@ end
 # This class represents a group of diners tracking their expenditures when they eat together.
 #
 # Attributes:
-# @roster - Hash: Keys are member's names. Values are Diner objects.
+# @roster - Hash: Keys are member's names. Values are the total spent by that member.
 # @log    - Hash: Keys are the date of the event, Values are settlement hashes.
 #
 # Public Methods:
@@ -219,6 +219,7 @@ superpals.add_member_to_check(pizza,'Batman',12.12)
 superpals.add_member_to_check(pizza,'Barbara',10.0)
 superpals.add_member_to_check(pizza,'Dick',8.92)
 pizza.split_individually
+pizza.set_gratuity(26)
 pizza.settle
 superpals.add_check_to_log(pizza,'01-30 Went to fancy pizza with kids.')
 ice_cream = Check.new(22.07)
@@ -234,6 +235,7 @@ superpals.add_member_to_check(scotch,'Batman',50.00)
 superpals.add_member_to_check(scotch,'Clark',50.00)
 superpals.add_member_to_check(scotch,'Diana',50.00)
 scotch.all_on('Batman')
+scotch.set_gratuity(-30)
 scotch.settle
 superpals.add_check_to_log(scotch,'Bought a round for the gang.')
 puts superpals.log
