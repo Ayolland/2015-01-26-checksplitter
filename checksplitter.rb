@@ -17,8 +17,10 @@ class Check
   ##FINISH THIS DOC LATER
   #This method will take a 0-100 value and covert it to a percentage, with a minimum of .1
   def set_gratuity(tip)
-    gratuity = tip * 0.01
-    gratuity = 0.01 if gratuity < 0.01
+    if @settled == :no
+      gratuity = tip * 0.01
+      gratuity = 0.01 if gratuity < 0.01
+    end
   end
   
   #
@@ -62,6 +64,17 @@ class Check
     return very_nice_person
   end
   
+  #FINISH THIS DOC LATER
+  # This method should use the Check object to determine how much each member should pay, and create a hash of that.
+  def settle
+    settlement = {}
+    @members_share.each do |name, share|
+      settlement[name] = (calc_total * share)
+    end
+    @settled = :yes
+    return settlement
+  end
+  
 end
 
 # Class: DinnerClub
@@ -81,33 +94,33 @@ class DinnerClub
   end
 
   # FINISH THIS DOC LATER
-  #This method creates a new Diner object and adds it into @roster.
+  #This method creates a new diner in the roster. 
   def add_member_to_club(name_of_new_diner)
-    @roster[name_of_new_diner] = Diner.new(name_of_new_diner)
+    @roster[name_of_new_diner] = 0
   end
   
   #FINISH THIS DOC LATER
   # This method should push a member's name and the amount they spent pre-tax to the Check object.
   def add_member_to_check(name_of_check,member_name,individual_amount_pretax)
     if name_of_check.settled == :no
-    name_of_check.members_attending[member_name] = individual_amount_pretax
-    name_of_check.number_of_guests += 1
+      name_of_check.members_attending[member_name] = individual_amount_pretax
+      name_of_check.number_of_guests += 1
     end
-  end
-  
-  #FINISH THIS DOC LATER
-  # This method should use the Check object to determine how much each member should pay, add that to their balance in the Diner object, and mark that Check as settled.
-  def settle_check(check_object)
-    check_object.settled = :yes #that's all for now
   end
   
   #FINISH THIS DOC LATER
   # This method should add a settled check to the log.
-  def add_check_to_log(check_object,date)
-    if (check_object.settled == :yes) && (@log[date] == nil)
-      @log[date] = check_object
+  def add_check_to_log(check_object, description)
+    if check_object.settled == :yes
+      @log[description] = check_object.settle
+      check_object.settle.each do |name, paid|
+        puts check_object.settle[name]
+        @roster[name] = 0 if @roster[name] == nil
+        @roster[name] += paid.to_f
+      end
     end
   end
+  
 end
 
 #this class should have a name, a balance, and a log.
@@ -125,11 +138,28 @@ end
 
 superpals = DinnerClub.new
 superpals.add_member_to_club('Batman')
-pizza = Check.new(350.55)
-superpals.add_member_to_check(pizza,'Batman',5.50)
-superpals.add_member_to_check(pizza,'Sally',10.0)
-superpals.add_member_to_check(pizza,'Mom',8.92)
-superpals.settle_check(pizza)
-superpals.add_check_to_log(pizza,'now')
+pizza = Check.new(36.50)
+superpals.add_member_to_check(pizza,'Batman',12.12)
+superpals.add_member_to_check(pizza,'Barbara',10.0)
+superpals.add_member_to_check(pizza,'Dick',8.92)
+pizza.split_individually
+pizza.settle
+superpals.add_check_to_log(pizza,'01-30 Went to fancy pizza with kids.')
+ice_cream = Check.new(22.07)
+superpals.add_member_to_check(ice_cream,'Batman',2.0)
+superpals.add_member_to_check(ice_cream,'Barbara',10.0)
+superpals.add_member_to_check(ice_cream,'Dick',1000.00)
+superpals.add_member_to_check(ice_cream,'Clark',0.5)
+ice_cream.split_evenly
+ice_cream.settle
+superpals.add_check_to_log(ice_cream,'01-30 Got ice cream with Clark after.')
+scotch = Check.new (150.00)
+superpals.add_member_to_check(scotch,'Batman',50.00)
+superpals.add_member_to_check(scotch,'Clark',50.00)
+superpals.add_member_to_check(scotch,'Diana',50.00)
+scotch.all_on('Batman')
+scotch.settle
+superpals.add_check_to_log(scotch,'Bought a round for the gang.')
+puts superpals.log
 binding.pry
     
