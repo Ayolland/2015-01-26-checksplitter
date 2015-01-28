@@ -90,7 +90,7 @@ class Check
 # Assigns shares evenly, regardless of what each person ordered.
 #
 # Returns: 
-# float equal to each member's share
+# @members_share
 #
 # State Changes:
 # fills @members_share with member names and shares using @members_attending.
@@ -99,14 +99,14 @@ class Check
     @members_attending.each do|member_name, each_pre_tax|
       @members_share[member_name] = (1.0 / @number_of_guests).round(2)
     end
-    return (1.0 / @number_of_guests).round(2)
+    return @members_share
   end
   
 # Public: #all_on()
 # Sets one member's shares to 100% and all others to 0%
 #
 # Returns: 
-# Key for the member with the 100 share
+# @members_share
 #
 # State Changes:
 # fills @members_share with member names and shares using @members_attending.
@@ -119,7 +119,7 @@ class Check
         @members_share[member_name] = 0
       end
     end
-    return very_nice_person
+    return @members_share
   end
   
 # Public: #settle
@@ -213,31 +213,31 @@ class DinnerClub
   
 end
 
-superpals = DinnerClub.new
-pizza = Check.new(36.50)
-superpals.add_member_to_check(pizza,'Batman',12.12)
-superpals.add_member_to_check(pizza,'Barbara',10.0)
-superpals.add_member_to_check(pizza,'Dick',8.92)
-pizza.split_individually
-pizza.set_gratuity(26)
-pizza.settle
-superpals.add_check_to_log(pizza,'01-30 Went to fancy pizza with kids.')
-ice_cream = Check.new(22.07)
-superpals.add_member_to_check(ice_cream,'Batman',2.0)
-superpals.add_member_to_check(ice_cream,'Barbara',10.0)
-superpals.add_member_to_check(ice_cream,'Dick',1000.00)
-superpals.add_member_to_check(ice_cream,'Clark',0.5)
-ice_cream.split_evenly
-ice_cream.settle
-superpals.add_check_to_log(ice_cream,'01-30 Got ice cream with Clark after.')
-scotch = Check.new (150.00)
-superpals.add_member_to_check(scotch,'Batman',50.00)
-superpals.add_member_to_check(scotch,'Clark',50.00)
-superpals.add_member_to_check(scotch,'Diana',50.00)
-scotch.all_on('Batman')
-scotch.set_gratuity(-30)
-scotch.settle
-superpals.add_check_to_log(scotch,'Bought a round for the gang.')
-puts superpals.log
-binding.pry
+# superpals = DinnerClub.new
+# pizza = Check.new(36.50)
+# superpals.add_member_to_check(pizza,'Batman',12.12)
+# superpals.add_member_to_check(pizza,'Barbara',10.0)
+# superpals.add_member_to_check(pizza,'Dick',8.92)
+# pizza.split_individually
+# pizza.set_gratuity(26)
+# pizza.settle
+# superpals.add_check_to_log(pizza,'01-30 Went to fancy pizza with kids.')
+# ice_cream = Check.new(22.07)
+# superpals.add_member_to_check(ice_cream,'Batman',2.0)
+# superpals.add_member_to_check(ice_cream,'Barbara',10.0)
+# superpals.add_member_to_check(ice_cream,'Dick',1000.00)
+# superpals.add_member_to_check(ice_cream,'Clark',0.5)
+# ice_cream.split_evenly
+# ice_cream.settle
+# superpals.add_check_to_log(ice_cream,'01-30 Got ice cream with Clark after.')
+# scotch = Check.new (150.00)
+# superpals.add_member_to_check(scotch,'Batman',50.00)
+# superpals.add_member_to_check(scotch,'Clark',50.00)
+# superpals.add_member_to_check(scotch,'Diana',50.00)
+# scotch.all_on('Batman')
+# scotch.set_gratuity(-30)
+# scotch.settle
+# superpals.add_check_to_log(scotch,'Bought a round for the gang.')
+# puts superpals.log
+# binding.pry
     
