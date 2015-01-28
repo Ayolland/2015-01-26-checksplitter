@@ -1,5 +1,27 @@
 require 'pry'
 
+# Class: Check (previously checksplitter.)
+#
+# This class represents a check that needs to be split by one of three methods by the members of a DinnerCLub.
+#
+# Attributes:
+# @total_after_tax   - The total value of the check when presented.
+# @members_attending - A hash filled by the DiningClub class, keys are member names, 
+#                      values are the amount each member ordered for this check.
+# @members_share     - A hash, keys are names, values are the percentage of the total
+#                      bill the member will end up paying.
+# @settled           - This marks the check as active and able to be modified.
+# @number_of_guests  - Total number of guests the check will be split between.
+# @gratuity          - Gratuity, set to a default of twenty percent.
+#
+# Public Methods:
+# #set_gratuity
+# #calc_total
+# #split_individually
+# #split_evenly
+# #all_on()
+# #settle
+
 class Check
   
   attr_reader :total_after_tax, :members_attending, :members_share
@@ -7,30 +29,52 @@ class Check
   
   def initialize(total_after_tax_temp)
     @total_after_tax = total_after_tax_temp
-    @members_attending = {} #this should be pushed from the DiningClub class
-    @members_share = {} #this will be show what percentage of the bill/tip each member should cover
-    @settled = :no #This marks the check as currently active and able to be modified.
-    @number_of_guests = 0 #this will be added to as the DiningClub object adds members
-    @gratuity = 0.2 #Gratuity is set to a default of twenty percent.
+    @members_attending = {} 
+    @members_share = {} 
+    @settled = :no 
+    @number_of_guests = 0 
+    @gratuity = 0.2 
   end
   
-  ##FINISH THIS DOC LATER
-  #This method will take a 0-100 value and covert it to a percentage, with a minimum of .1
+# Public: #set_gratuity
+# Takes a percentage and converts it to a decimal, with a minimum of 0.1
+#
+# Parameters:
+# tip - the new gratuity in percent.
+#
+# Returns: 
+# @gratuity after any changes
+#
+# State Changes:
+# Sets @gratuity to a value selected by the user, no lower than 0.1
+  
   def set_gratuity(tip)
     if @settled == :no
-      gratuity = tip * 0.01
-      gratuity = 0.01 if gratuity < 0.01
+      @gratuity = tip * 0.01
+      @gratuity = 0.01 if @gratuity < 0.1
     end
+    return @gratuity
   end
   
-  #
-  #This method determines the total including tip.
+# Public: #calc_total
+# Calculates the total bill including gratuity.
+#
+# Returns: 
+# total bill plus tip
+
   def calc_total
     (@total_after_tax * @gratuity) + @total_after_tax
   end
   
-  #FINISH THIS DOC LATER
-  # This method will assign shares based on how much each member ordered.
+# Public: #split_individually
+# Assigns shares based on how much each member ordered.
+#
+# Returns: 
+# @members_share
+#
+# State Changes:
+# fills @members_share with member names and shares using @members_attending.
+  
   def split_individually
     total_pre_tax = 0.0
     @members_attending.each do |member_name, each_pre_tax|
@@ -42,8 +86,15 @@ class Check
     return @members_share
   end
   
-  ##FINISH THIS DOC LATER
-  #THis method will assign shares evenly, regardless of what each person ordered.
+# Public: #split_individually
+# Assigns shares evenly, regardless of what each person ordered.
+#
+# Returns: 
+# float equal to each member's share
+#
+# State Changes:
+# fills @members_share with member names and shares using @members_attending.
+  
   def split_evenly
     @members_attending.each do|member_name, each_pre_tax|
       @members_share[member_name] = (1.0 / @number_of_guests).round(2)
@@ -51,8 +102,15 @@ class Check
     return (1.0 / @number_of_guests).round(2)
   end
   
-  #FINISH THIS DOC LATER
-  #This method will set one member's shares to 100% and all others to 0%
+# Public: #split_individually
+# Sets one member's shares to 100% and all others to 0%
+#
+# Returns: 
+# Key for the member with the 100 share
+#
+# State Changes:
+# fills @members_share with member names and shares using @members_attending.
+  
   def all_on(very_nice_person)
     @members_attending.each do |member_name, each_pre_tax|
       if member_name == very_nice_person
@@ -64,8 +122,15 @@ class Check
     return very_nice_person
   end
   
-  #FINISH THIS DOC LATER
-  # This method should use the Check object to determine how much each member should pay, and create a hash of that.
+# Public: #settle
+# Uses @members_share and @calc_total to create a hash of each member's payment.
+#
+# Returns: 
+# a hash where keys are member names and values are amounts paid.
+#
+# State Changes:
+# Sets @settled to yes to prevent further changes.
+  
   def settle
     settlement = {}
     @members_share.each do |name, share|
@@ -79,10 +144,17 @@ end
 
 # Class: DinnerClub
 #
+# This class represents a group of diners tracking their expenditures when they eat together.
+#
 # Attributes:
 # @roster - Hash: Keys are member's names. Values are Diner objects.
-# @log    - Hash: Keys are the date of the event, Values are
-#                 Check object for that event.
+# @log    - Hash: Keys are the date of the event, Values are settlement hashes.
+#
+# Public Methods:
+# #add_member_to_check
+# #add_check_to_log
+
+
 class DinnerClub
   
    attr_reader :roster, :log
@@ -90,26 +162,43 @@ class DinnerClub
   def initialize
     @roster = {}
     @log ={}
-
-  end
-
-  # FINISH THIS DOC LATER
-  #This method creates a new diner in the roster. 
-  def add_member_to_club(name_of_new_diner)
-    @roster[name_of_new_diner] = 0
   end
   
-  #FINISH THIS DOC LATER
-  # This method should push a member's name and the amount they spent pre-tax to the Check object.
+# Public: #add_member_to_check
+# Adds a member to a check object to determine how much they owe.
+#
+# Parameters:
+# name_of_check             - the check object the method is adding to.
+# member_name               - the name the member is to be refered to in the roster.
+# individual_amount_pretax  - the amount of food/drink the member ordered.
+#
+# Returns: 
+# the name of the member added.
+#
+# State Changes:
+# Adds to the @members_attending hash *in the check object referenced.*
+
   def add_member_to_check(name_of_check,member_name,individual_amount_pretax)
     if name_of_check.settled == :no
       name_of_check.members_attending[member_name] = individual_amount_pretax
       name_of_check.number_of_guests += 1
     end
+    return member_name
   end
   
-  #FINISH THIS DOC LATER
-  # This method should add a settled check to the log.
+# Public: #add_check_to_log
+# Add the settlement of a check to the club log for future note.
+#
+# Parameters:
+# check_object - the check object the method is pulling from.
+# description  - a string or other value to remember this event by.
+#
+# Returns: 
+# the log entry just added.
+#
+# State Changes:
+# Adds to the @log hash.
+
   def add_check_to_log(check_object, description)
     if check_object.settled == :yes
       @log[description] = check_object.settle
@@ -119,25 +208,12 @@ class DinnerClub
         @roster[name] += paid.to_f
       end
     end
-  end
-  
-end
-
-#this class should have a name, a balance, and a log.
-class Diner
-  
-  attr_reader :name, :dinner_log, :member_balance
-  
-  def initialize(real_name)
-    @name = real_name #
-    @dinner_log = {} #A hash where date is the key, and Check objects are values.
-    @member_balance = 0 #To be added to with each event they attend.
+    return @log[description]
   end
   
 end
 
 superpals = DinnerClub.new
-superpals.add_member_to_club('Batman')
 pizza = Check.new(36.50)
 superpals.add_member_to_check(pizza,'Batman',12.12)
 superpals.add_member_to_check(pizza,'Barbara',10.0)
