@@ -51,7 +51,7 @@ class Check
   def set_gratuity(tip)
     if @settled == :no
       @gratuity = tip * 0.01
-      @gratuity = 0.01 if @gratuity < 0.1
+      @gratuity = 0.1 if @gratuity < 0.1
     end
     return @gratuity
   end
