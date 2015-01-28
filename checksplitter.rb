@@ -6,10 +6,11 @@ require 'pry'
 #
 # Attributes:
 # @total_after_tax   - The total value of the check when presented.
-# @members_attending - A hash filled by the DiningClub class, keys are member names, 
+# @members_tabs - A hash filled by the DiningClub class, keys are member names, 
 #                      values are the amount each member ordered for this check.
-# @members_share     - A hash, keys are names, values are the percentage of the total
-#                      bill the member will end up paying.
+# @members_share     - A hash, keys are names, values are the percentage of the 
+#                      total bill the member will end up paying.
+# @split             - This marks if the check has been split up yet.
 # @settled           - This marks the check as active and able to be modified.
 # @number_of_guests  - Total number of guests the check will be split between.
 # @gratuity          - Gratuity, set to a default of twenty percent.
@@ -21,16 +22,19 @@ require 'pry'
 # #split_evenly
 # #all_on()
 # #settle
+# #add_diners
+# #diners_tab
 
 class Check
   
-  attr_reader :total_after_tax, :members_attending, :members_share, :gratuity, :settled
+  attr_reader :total_after_tax, :members_tabs, :members_share, :gratuity, :settled
   attr_accessor :number_of_guests
   
   def initialize(total_after_tax_temp)
     @total_after_tax = total_after_tax_temp
-    @members_attending = {} 
-    @members_share = {} 
+    @members_tabs = {} 
+    @members_share = {}
+    @split = :no 
     @settled = :no 
     @number_of_guests = 0 
     @gratuity = 0.2 
@@ -73,15 +77,18 @@ class Check
 # @members_share
 #
 # State Changes:
-# fills @members_share with member names and shares using @members_attending.
+# fills @members_share with member names and shares using @members_tabs.
   
   def split_individually
     total_pre_tax = 0.0
-    @members_attending.each do |member_name, each_pre_tax|
+    @members_tabs.each do |member_name, each_pre_tax|
      total_pre_tax += each_pre_tax
     end
-    @members_attending.each do |member_name, each_pre_tax|
-      @members_share[member_name] = (each_pre_tax / total_pre_tax).round(2)
+    if total_pre_tax > 0.0
+        @members_tabs.each do |member_name, each_pre_tax|
+          @members_share[member_name] = (each_pre_tax / total_pre_tax).round(2)
+        end
+        @split = :yes
     end
     return @members_share
   end
@@ -93,12 +100,13 @@ class Check
 # @members_share
 #
 # State Changes:
-# fills @members_share with member names and shares using @members_attending.
+# fills @members_share with member names and shares using @members_tabs.
   
   def split_evenly
-    @members_attending.each do|member_name, each_pre_tax|
+    @members_tabs.each do|member_name, each_pre_tax|
       @members_share[member_name] = (1.0 / @number_of_guests).round(2)
     end
+    @split = :yes
     return @members_share
   end
   
@@ -109,16 +117,17 @@ class Check
 # @members_share
 #
 # State Changes:
-# fills @members_share with member names and shares using @members_attending.
+# fills @members_share with member names and shares using @members_tabs.
   
   def all_on(very_nice_person)
-    @members_attending.each do |member_name, each_pre_tax|
+    @members_tabs.each do |member_name, each_pre_tax|
       if member_name == very_nice_person
         @members_share[member_name] = 1
       else
         @members_share[member_name] = 0
       end
     end
+    @split = :yes
     return @members_share
   end
   
@@ -132,13 +141,55 @@ class Check
 # Sets @settled to yes to prevent further changes.
   
   def settle
-    settlement = {}
-    @members_share.each do |name, share|
-      settlement[name] = (calc_total * share).round(2)
+    if @split == :yes
+      settlement = {}
+      @members_share.each do |name, share|
+        settlement[name] = (calc_total * share).round(2)
+      end
+      @settled = :yes
+      return settlement
     end
-    @settled = :yes
-    return settlement
   end
+  
+# Public: #add_diners
+# Adds any number of diners to a check, each with a tab of 0.
+#
+# Parameters:
+# *diners  - a series of diners' names, ideally in strings
+#
+# Returns: 
+# the array of diners
+#
+# State Changes:
+# Adds to the @members_tabs hash.
+
+    def add_diners(*diners_array)
+      if @settled == :no
+        diners_array.each do |diner_name|
+          @members_tabs[diner_name] = 0
+          @number_of_guests += 1
+        end
+      end
+      return *diners_array
+    end
+    
+# Public: #diners_tab
+# Allows the setting of the amount each diner ordered.
+# If the diner is not on the check, it should add them.
+#
+# Parameters:
+# diner_name  - a diner's names, a key
+#
+# Returns: 
+# the value of the @diners_tab hash using the name entered as a key.
+#
+# State Changes:
+# edits to the @members_tabs hash.    
+    
+    def diners_tab(diner_name,pre_tax)
+      @members_tabs[diner_name] = pre_tax
+      return @members_tabs[diner_name]
+    end
   
 end
 
@@ -151,7 +202,6 @@ end
 # @log    - Hash: Keys are the date of the event, Values are settlement hashes.
 #
 # Public Methods:
-# #add_member_to_check
 # #add_check_to_log
 
 
@@ -162,28 +212,6 @@ class DinnerClub
   def initialize
     @roster = {}
     @log ={}
-  end
-  
-# Public: #add_member_to_check
-# Adds a member to a check object to determine how much they owe.
-#
-# Parameters:
-# name_of_check             - the check object the method is adding to.
-# member_name               - the name the member is to be refered to in the roster.
-# individual_amount_pretax  - the amount of food/drink the member ordered.
-#
-# Returns: 
-# the name of the member added.
-#
-# State Changes:
-# Adds to the @members_attending hash *in the check object referenced.*
-
-  def add_member_to_check(name_of_check,member_name,individual_amount_pretax)
-    if name_of_check.settled == :no
-      name_of_check.members_attending[member_name] = individual_amount_pretax
-      name_of_check.number_of_guests += 1
-    end
-    return member_name
   end
   
 # Public: #add_check_to_log
@@ -213,31 +241,30 @@ class DinnerClub
   
 end
 
-# superpals = DinnerClub.new
-# pizza = Check.new(36.50)
-# superpals.add_member_to_check(pizza,'Batman',12.12)
-# superpals.add_member_to_check(pizza,'Barbara',10.0)
-# superpals.add_member_to_check(pizza,'Dick',8.92)
-# pizza.split_individually
-# pizza.set_gratuity(26)
-# pizza.settle
-# superpals.add_check_to_log(pizza,'01-30 Went to fancy pizza with kids.')
-# ice_cream = Check.new(22.07)
-# superpals.add_member_to_check(ice_cream,'Batman',2.0)
-# superpals.add_member_to_check(ice_cream,'Barbara',10.0)
-# superpals.add_member_to_check(ice_cream,'Dick',1000.00)
-# superpals.add_member_to_check(ice_cream,'Clark',0.5)
-# ice_cream.split_evenly
-# ice_cream.settle
-# superpals.add_check_to_log(ice_cream,'01-30 Got ice cream with Clark after.')
-# scotch = Check.new (150.00)
-# superpals.add_member_to_check(scotch,'Batman',50.00)
-# superpals.add_member_to_check(scotch,'Clark',50.00)
-# superpals.add_member_to_check(scotch,'Diana',50.00)
-# scotch.all_on('Batman')
-# scotch.set_gratuity(-30)
-# scotch.settle
-# superpals.add_check_to_log(scotch,'Bought a round for the gang.')
-# puts superpals.log
-# binding.pry
+superpals = DinnerClub.new
+pizza = Check.new(36.50)
+pizza.add_diners('Batman','Barbara','Dick')
+pizza.diners_tab('Batman',12.12)
+pizza.diners_tab('Barbara',10.0)
+pizza.diners_tab('Dick',8.92)
+pizza.split_individually
+pizza.set_gratuity(26)
+pizza.settle
+superpals.add_check_to_log(pizza,'01-30 Went to fancy pizza with kids.')
+ice_cream = Check.new(22.07)
+ice_cream.add_diners('Dick', 'Clark', 'Barbara', 'Batman')
+ice_cream.split_evenly
+ice_cream.settle
+superpals.add_check_to_log(ice_cream,'01-30 Got ice cream with Clark after.')
+scotch = Check.new (150.00)
+scotch.add_diners('Diana', 'Clark')
+scotch.diners_tab('Clark', 50.0)
+scotch.diners_tab('Diana', 50.0)
+scotch.diners_tab('Batman', 50.0)
+scotch.all_on('Batman')
+scotch.set_gratuity(-30)
+scotch.settle
+superpals.add_check_to_log(scotch,'Bought a round for the gang.')
+puts superpals.log
+binding.pry
     
