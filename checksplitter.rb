@@ -12,7 +12,6 @@ require 'pry'
 #                      total bill the member will end up paying.
 # @split             - This marks if the check has been split up yet.
 # @settled           - This marks the check as active and able to be modified.
-# @number_of_guests  - Total number of guests the check will be split between.
 # @gratuity          - Gratuity, set to a default of twenty percent.
 #
 # Public Methods:
@@ -35,8 +34,7 @@ class Check
     @members_tabs = {} 
     @members_share = {}
     @split = :no 
-    @settled = :no 
-    @number_of_guests = 0 
+    @settled = :no  
     @gratuity = grat * 0.01 
     @gratuity = 0.1 if @gratuity < 0.1
   end
@@ -105,7 +103,7 @@ class Check
   
   def split_evenly
     @members_tabs.each do|member_name, each_pre_tax|
-      @members_share[member_name] = (1.0 / @number_of_guests)
+      @members_share[member_name] = (1.0 / @members_tabs.length)
     end
     @split = :yes
     return @members_share
@@ -168,7 +166,6 @@ class Check
       if @settled == :no
         diners_array.each do |diner_name|
           @members_tabs[diner_name] = 0
-          @number_of_guests += 1
         end
       end
       return *diners_array
@@ -273,37 +270,38 @@ class DinnerClub
   
 end
 
-# superpals = DinnerClub.new
-# pizza = Check.new(36.50, 26)
-# pizza.add_diners('Batman','Barbara','Dick')
-# pizza.diners_tab('Batman',12.12)
-# pizza.diners_tab('Barbara',10.0)
-# pizza.diners_tab('Dick',8.92)
-# pizza.split_individually
-# pizza.settle
-# superpals.add_check_to_log(pizza,'01-30 Went to fancy pizza with kids.')
-# ice_cream = Check.new(22.07)
-# ice_cream.add_diners('Dick', 'Clark', 'Barbara', 'Batman')
-# ice_cream.split_evenly
-# ice_cream.settle
-# superpals.member_total('Dick')
-# superpals.add_check_to_log(ice_cream,'01-30 Got ice cream with Clark after.')
-# scotch = Check.new(150.00, 18)
-# scotch.add_diners('Diana', 'Clark')
-# scotch.diners_tab('Clark', 50.0)
-# scotch.diners_tab('Diana', 50.0)
-# scotch.diners_tab('Batman', 50.0)
-# scotch.all_on('Batman')
-# scotch.set_gratuity(-30)
-# scotch.settle
-# superpals.add_check_to_log(scotch,'Ran into the gang, bought a round')
-# brunch = Check.new(46.77)
-# brunch.add_diners('Batman', 'Batgirl')
-# brunch.split_evenly
-# brunch.settle
-# superpals.add_check_to_log(brunch, 'Batgirl (?) invited me to brunch?')
-# superpals.merge_x_into_y('Batgirl','Barbara')
-# puts superpals.log
-# binding.pry
+ superpals = DinnerClub.new
+ pizza = Check.new(36.50, 26)
+ pizza.add_diners('Batman','Barbara','Dick')
+ pizza.diners_tab('Batman',12.12)
+ pizza.diners_tab('Barbara',10.0)
+ pizza.diners_tab('Dick',8.92)
+ pizza.split_individually
+ pizza.settle
+ superpals.add_check_to_log(pizza,'01-30 Went to fancy pizza with kids.')
+ ice_cream = Check.new(22.07)
+ ice_cream.add_diners('Dick', 'Clark', 'Barbara', 'Batman')
+ ice_cream.split_evenly
+ ice_cream.settle
+ superpals.member_total('Dick')
+ superpals.add_check_to_log(ice_cream,'01-30 Got ice cream with Clark after.')
+ scotch = Check.new(150.00, 18)
+ scotch.add_diners('Diana', 'Clark')
+ scotch.diners_tab('Clark', 50.0)
+ scotch.diners_tab('Diana', 50.0)
+ scotch.diners_tab('Batman', 50.0)
+ scotch.all_on('Batman')
+ scotch.set_gratuity(-30)
+ scotch.settle
+ superpals.add_check_to_log(scotch,'Ran into the gang, bought a round')
+ brunch = Check.new(46.77)
+ brunch.add_diners('Batman', 'Batgirl')
+ brunch.split_evenly
+ brunch.settle
+ superpals.add_check_to_log(brunch, 'Batgirl (?) invited me to brunch?')
+ superpals.merge_x_into_y('Batgirl','Barbara')
+ puts superpals.log
+ 
+ binding.pry
 
   
