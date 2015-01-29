@@ -27,7 +27,7 @@ require 'pry'
 
 class Check
   
-  attr_reader :total_after_tax, :members_tabs, :members_share, :gratuity, :settled
+  attr_reader :total_after_tax, :members_tabs, :members_share, :gratuity, :settled, :split
   attr_accessor :number_of_guests
   
   def initialize(total_after_tax_temp, grat=20)
@@ -105,7 +105,7 @@ class Check
   
   def split_evenly
     @members_tabs.each do|member_name, each_pre_tax|
-      @members_share[member_name] = (1.0 / @number_of_guests).round(2)
+      @members_share[member_name] = (1.0 / @number_of_guests)
     end
     @split = :yes
     return @members_share
@@ -205,6 +205,7 @@ end
 # Public Methods:
 # #add_check_to_log
 # #member_total
+# #merge_x_into_y
 
 
 class DinnerClub
@@ -251,31 +252,58 @@ class DinnerClub
     @roster[member_name]
   end
   
+# Public: #merge_x_into_y
+# Merge member's total in case of data-entry error.
+#
+# Parameters:
+# fake_member   - the key in @roster for the member to be deleted.
+# actual_member - the key in @roster for the member acount being merged into.
+#
+# Returns: 
+# the new, merged total.
+#
+# State Changes:
+# changes @roster, deletes an entry.
+  
+  def merge_x_into_y(fake_member,actual_member)
+    @roster[actual_member] = ( member_total(actual_member) + member_total(fake_member) )
+    @roster.delete(fake_member)
+    return member_total(actual_member)
+  end
+  
 end
 
-superpals = DinnerClub.new
-pizza = Check.new(36.50, 26)
-pizza.add_diners('Batman','Barbara','Dick')
-pizza.diners_tab('Batman',12.12)
-pizza.diners_tab('Barbara',10.0)
-pizza.diners_tab('Dick',8.92)
-pizza.split_individually
-pizza.settle
-superpals.add_check_to_log(pizza,'01-30 Went to fancy pizza with kids.')
-ice_cream = Check.new(22.07)
-ice_cream.add_diners('Dick', 'Clark', 'Barbara', 'Batman')
-ice_cream.split_evenly
-ice_cream.settle
-superpals.add_check_to_log(ice_cream,'01-30 Got ice cream with Clark after.')
-scotch = Check.new(150.00, 18)
-scotch.add_diners('Diana', 'Clark')
-scotch.diners_tab('Clark', 50.0)
-scotch.diners_tab('Diana', 50.0)
-scotch.diners_tab('Batman', 50.0)
-scotch.all_on('Batman')
-scotch.set_gratuity(-30)
-scotch.settle
-superpals.add_check_to_log(scotch,'Ran into the gang, bought a round')
-puts superpals.log
-binding.pry
-    
+# superpals = DinnerClub.new
+# pizza = Check.new(36.50, 26)
+# pizza.add_diners('Batman','Barbara','Dick')
+# pizza.diners_tab('Batman',12.12)
+# pizza.diners_tab('Barbara',10.0)
+# pizza.diners_tab('Dick',8.92)
+# pizza.split_individually
+# pizza.settle
+# superpals.add_check_to_log(pizza,'01-30 Went to fancy pizza with kids.')
+# ice_cream = Check.new(22.07)
+# ice_cream.add_diners('Dick', 'Clark', 'Barbara', 'Batman')
+# ice_cream.split_evenly
+# ice_cream.settle
+# superpals.member_total('Dick')
+# superpals.add_check_to_log(ice_cream,'01-30 Got ice cream with Clark after.')
+# scotch = Check.new(150.00, 18)
+# scotch.add_diners('Diana', 'Clark')
+# scotch.diners_tab('Clark', 50.0)
+# scotch.diners_tab('Diana', 50.0)
+# scotch.diners_tab('Batman', 50.0)
+# scotch.all_on('Batman')
+# scotch.set_gratuity(-30)
+# scotch.settle
+# superpals.add_check_to_log(scotch,'Ran into the gang, bought a round')
+# brunch = Check.new(46.77)
+# brunch.add_diners('Batman', 'Batgirl')
+# brunch.split_evenly
+# brunch.settle
+# superpals.add_check_to_log(brunch, 'Batgirl (?) invited me to brunch?')
+# superpals.merge_x_into_y('Batgirl','Barbara')
+# puts superpals.log
+# binding.pry
+
+  
